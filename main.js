@@ -831,39 +831,6 @@ const app = Vue.createApp({
         calcularTotalDividas() {
             this.totalDividas = this.calcularTotal(this.dividas);
         },
-        dividasFiltradas() {
-            if (!this.dividas || !Array.isArray(this.dividas)) return [];
-            
-            const dividasFiltradas = this.dividas.filter(divida => {
-                if (!divida || !divida.data) return false;
-                
-                let partesData;
-                
-                try {
-                    if (divida.data.includes('/')) {
-                        // Formato DD/MM/YYYY
-                        partesData = divida.data.split('/');
-                    } else if (divida.data.includes('-')) {
-                        // Formato YYYY-MM-DD
-                        const dataParts = divida.data.split('-');
-                        partesData = [dataParts[2], dataParts[1], dataParts[0]];
-                    } else {
-                        return false; // Formato não reconhecido
-                    }
-                    
-                    if (partesData.length !== 3) return false;
-                    
-                    const mesDaDivida = parseInt(partesData[1], 10);
-                    const anoDaDivida = parseInt(partesData[2], 10);
-
-                    return mesDaDivida === this.mes && anoDaDivida === this.ano;
-                } catch (error) {
-                    return false;
-                }
-            });
-            
-            return this.ordenarPorDia(dividasFiltradas);
-        },
         totalDividasDoMes() {
             return this.calcularTotal(this.dividasFiltradas);
         },
@@ -1148,6 +1115,9 @@ const app = Vue.createApp({
                 maximumFractionDigits: 2,
             });
         },
+        totalDividas() {
+            return this.calcularTotal(this.dividas);
+        },
         totalControlesDoMes() {
             return this.calcularTotal(this.controles);
         },
@@ -1199,12 +1169,12 @@ app.component('selecionar-mes-ano', {
     emits: ['update:mes', 'update:ano'],
     template: `
         <div class="d-flex justify-content-between align-items-center mb-3">
-        <select class="form-select bg-primary text-white" v-model.number="mesLocal">
-            <option v-for="m in 12" :value="m">{{ nomeMes(m) }}</option>
-        </select>
-        <select class="form-select bg-primary text-white" v-model.number="anoLocal">
-            <option v-for="a in anosDisponiveis" :value="a">{{ a }}</option>
-        </select>
+            <select class="form-select bg-primary text-white" v-model.number="mesLocal">
+                <option v-for="m in 12" :value="m">{{ nomeMes(m) }}</option>
+            </select>
+            <select class="form-select bg-primary text-white" v-model.number="anoLocal">
+                <option v-for="a in anosDisponiveis" :value="a">{{ a }}</option>
+            </select>
         </div>
     `,
     data() {

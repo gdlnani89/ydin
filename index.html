@@ -22,23 +22,23 @@
                     <span>Dashboard</span>
                 </a>
                 <a href="#" class="nav-link" :class="{'active': menuAtivo === 'receitas'}" @click="showSection('receitas')">
-                    <i class="bi bi-arrow-up-circle-fill"></i>
+                    <i class="bi bi-arrow-up-circle-fill me-2"></i>
                     <span>Receitas</span>
                 </a>
                 <a href="#" class="nav-link" :class="{'active': menuAtivo === 'despesas'}" @click="showSection('despesas')">
                     <i class="bi bi-arrow-down-circle-fill me-2"></i>
                     <span>Despesas</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showSection('investimentos')">
-                    <i class="bi bi-bar-chart-line-fill"></i>
+                <a href="#" class="nav-link" :class="{'active': menuAtivo === 'investimentos'}" @click="showSection('investimentos')">
+                    <i class="bi bi-bar-chart-line-fill me-2"></i>
                     <span>Investimentos</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showSection('dividas')">
-                    <i class="bi bi-table"></i>
+                <a href="#" class="nav-link" :class="{'active': menuAtivo === 'dividas'}" @click="showSection('dividas')">
+                    <i class="bi bi-table me-2"></i>
                     <span>Dívidas</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showSection('controles')">
-                    <i class="bi bi-calendar2-plus-fill"></i>
+                <a href="#" class="nav-link" :class="{'active': menuAtivo === 'controles'}" @click="showSection('controles')">
+                    <i class="bi bi-calendar2-plus-fill me-2"></i>
                     <span>Controles</span>
                 </a>
             </nav>
@@ -134,42 +134,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="row" v-if="despesasFuturas.length > 0">
-                    <div class="col-12">
-                        <div class="card futuras-card">
-                            <div class="card-header">
-                                <h4>Despesas Futuras (Parcelas Pendentes)</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Descrição</th>
-                                                <th>Valor</th>
-                                                <th>Vencimento</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="despesa in despesasFuturas" :key="despesa.id">
-                                                <td>{{ despesa.descricao }}</td>
-                                                <td>R$ {{ despesa.valor }}</td>
-                                                <td>{{ despesa.data }}</td>
-                                                <td>
-                                                    <span v-if="despesa.parcelaNumero" class="badge bg-warning">
-                                                        Parcela {{ despesa.parcelaNumero }}/{{ despesa.parcelas }}
-                                                    </span>
-                                                    <span v-else class="badge bg-info">À vista</span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
+                
             </section>
             <!-- Despesas -->
             <section class="content-section" id="despesas" v-if="currentSection === 'despesas'">
@@ -287,6 +252,33 @@
                     </ul>
                 </div>
                 <p v-else class="text-center">Nenhuma receita encontrada</p>
+                <div class="row tabela-desktop mt-3 justify-content-center w-100" v-if="receitas.length > 0">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Dia</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="receita in receitasFiltradas" :key="receita.id">
+                                <td>{{ receita.descricao }}</td>
+                                <td>R$ {{ receita.valor }}</td>
+                                <td>{{ receita.data.split('/')[0] }}</td>
+                                <td class="d-flex justify-content-end">
+                                    <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirReceita(receita.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm btn-acao" @click="editarReceita(receita)" data-bs-toggle="modal" data-bs-target="#novaReceitaModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
             <!-- Investimentos -->
             <section class="content-section" id="investimentos" v-if="currentSection === 'investimentos'">
@@ -297,10 +289,6 @@
                         <span class="btn-mobile-text">Novo Investimento</span>
                     </button>
                 </div>
-
-                <!-- <div class="total mb-3 mt-3">
-                    <p>Total de Investimentos: <strong>R$ {{ totalInvestimentosDoMes }}</strong></p>
-                </div> -->
                 <total-card tipo="Investimentos" :total="totalInvestimentosDoMes"></total-card>
                 <div v-if="investimentos.length > 0" class="scroll-area">
                     <ul class="list-mobile">
@@ -324,6 +312,33 @@
                     </ul>
                 </div>
                 <p v-else class="text-center">Nenhum investimento encontrado</p>
+                <div class="row tabela-desktop mt-3 justify-content-center w-100" v-if="investimentos.length > 0">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Data</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="investimento in investimentos" :key="investimento.id">
+                                <td>{{ investimento.descricao }}</td>
+                                <td>R$ {{ investimento.valor }}</td>
+                                <td>{{ investimento.data.split('/')[0] }}</td>
+                                <td class="d-flex justify-content-end">
+                                    <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirInvestimento(investimento.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm btn-acao" @click="editarInvestimento(investimento)" data-bs-toggle="modal" data-bs-target="#novoInvestimentoModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
             <!-- Dívidas -->
             <section class="content-section" id="dividas" v-if="currentSection === 'dividas'">
@@ -334,12 +349,10 @@
                         <span class="btn-mobile-text">Nova Divida</span>
                     </button>
                 </div>
-                <div>
-                </div>
-                <total-card tipo="Dívidas" :total="totalDividasDoMes"></total-card>
+                <total-card tipo="Dívidas" :total="totalDividas"></total-card>
                 <div v-if="dividas.length > 0" class="scroll-area">
                     <ul class="list-mobile">
-                        <li class="list-item-card" v-for="divida in dividasFiltradas" :key="divida.id">
+                        <li class="list-item-card" v-for="divida in dividas" :key="divida.id">
                             <div class="d-flex flex-column">
                                 <strong>{{ divida.descricao }}</strong>
                                 <span class="fw-lighter">Data: {{ divida.data }}</span>
@@ -357,6 +370,33 @@
                             </div>
                         </li>
                     </ul>
+                </div>
+                <div class="row tabela-desktop mt-3 justify-content-center w-100" v-if="dividas.length > 0">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Data</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="divida in dividas" :key="divida.id">
+                                <td>{{ divida.descricao }}</td>
+                                <td>R$ {{ divida.valor }}</td>
+                                <td>{{ divida.data.split('/')[0] }}</td>
+                                <td class="d-flex justify-content-end">
+                                    <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirDivida(divida.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm btn-acao" @click="editarDivida(divida)" data-bs-toggle="modal" data-bs-target="#novaDividaModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <p v-else class="text-center">Nenhuma dívida encontrada</p>
             </section>
@@ -379,7 +419,7 @@
                     <button class="btn btn-primary ms-2 " type="submit">{{ editandoTipo ? 'Atualizar' : 'Adicionar' }}</button>
                 </form>
                 <div v-if="tiposControlesSalvos.length > 0" class="scroll-area">
-                    <ul class="list-mobile" v-for="tipo in tiposControlesSalvos" :key="tipo.id">
+                    <ul v-for="tipo in tiposControlesSalvos" :key="tipo.id">
                         <li class="list-item-card d-flex flex-column">
                             <div class="d-flex justify-content-between w-100">
                                 <span class="ms-2 d-flex align-items-center">
@@ -415,7 +455,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <ul class="list-mobile w-100 mt-3">
+                            <ul class="w-100 mt-3">
                                 <li class="list-item-card" v-for="controle in filtrarControlesPorTipo(tipo.nome)" :key="controle.id" :class="{'pago': controle.pago}">
                                     <div class="d-flex flex-column">
                                         <span class="fw-lighter">{{ controle.data }}</span>
