@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ydin$</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">Ydin</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link" :class="{'active': menuAtivo === 'dashboard'}" @click="showSection('dashboard')">
+                    <i class="bi bi-grid-1x2-fill me-2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-link" :class="{'active': menuAtivo === 'receitas'}" @click="showSection('receitas')">
+                    <i class="bi bi-arrow-up-circle-fill"></i>
+                    <span>Receitas</span>
+                </a>
+                <a href="#" class="nav-link" :class="{'active': menuAtivo === 'despesas'}" @click="showSection('despesas')">
+                    <i class="bi bi-arrow-down-circle-fill me-2"></i>
+                    <span>Despesas</span>
+                </a>
+                <!-- <a href="#" class="nav-link" onclick="showSection('investimentos')">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Investimentos</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showSection('dividas')">
+                    <i class="bi bi-table"></i>
+                    <span>Dívidas</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showSection('mais')">
+                    <i class="bi bi-three-dots"></i>
+                    <span>Mais</span>
+                </a> -->
+            </nav>
+
+        </aside>
+        <!-- navegação na barra de baixo -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-link" @click="showSection('dashboard')"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+            <a href="#" class="nav-link" @click="showSection('receitas')"><i class="bi bi-arrow-up-circle-fill"></i><span>Receitas</span></a>
+            <a href="#" class="nav-link" @click="showSection('despesas')"><i class="bi bi-arrow-down-circle-fill"></i><span>Despesas</span></a>
+            <a href="#" class="nav-link" @click="showSection('investimentos')"><i class="bi bi-bar-chart-line-fill"></i><span>Invest.</span></a>
+            <a href="#" class="nav-link" @click="showSection('dividas')"><i class="bi bi-table"></i><span>Dívidas</span></a>
+            <a href="#" class="nav-link" @click="showSection('controles')"><i class="bi bi-calendar2-plus-fill"></i><span>Controles</span></a>
+        </nav>
+        <main class="main-content">
+            <!-- Dashboard -->
+            <section class="content-section" id="dashboard" v-if="currentSection === 'dashboard'">
+                <div>
+                    <h2>Olá, Gui! 👋</h2>
+                    <p>Aqui está o resumo da sua vida financeira.</p>
+                </div>
+                <div class="row">
+                    <div class="col-lg-7">
+                        <div class="card balance-card">
+                            <div class="balance-header">
+                                <span>Saldo Total em Contas</span>
+                                <i class="bi bi-eye-slash-fill" id="toggleBalance"></i>
+                            </div>
+                            <h3 class="balance-amount" id="totalBalance">R$ {{ saldo }}</h3>
+                            <div class="balance-summary">
+                                <div class="summary-item">
+                                    <span class="label-incomes"><i class="bi bi-arrow-up"></i> Receitas</span>
+                                    <span class="value-incomes">R$ {{ totalReceitas }}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label-expenses"><i class="bi bi-arrow-down"></i> Despesas</span>
+                                    <span class="value-expenses">R$ {{ totalDespesasVencidas }}</span>
+                                </div>
+                                <!-- <div class="summary-item" v-if="totalDespesasFuturas !== '0,00'">
+                                    <span class="label-futuras"><i class="bi bi-calendar-event"></i> Futuras</span>
+                                    <span class="value-futuras">R$ {{ totalDespesasFuturas }}</span>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card quick-actions-card">
+                            <h4>Ações Rápidas</h4>
+                            <div class="actions-grid">
+                                <a href="#" class="action-item" @click="showSection('receitas')">
+                                    <div class="icon-wrapper bg-success-light"><i class="bi bi-plus-lg text-success"></i></div>
+                                    <span>Nova Receita</span>
+                                </a>    
+                                <a href="#" class="action-item" @click="showSection('despesas')">
+                                    <div class="icon-wrapper bg-danger-light"><i class="bi bi-dash-lg text-danger"></i></div>
+                                    <span>Nova Despesa</span>
+                                </a>
+                                <a href="#" class="action-item" @click="showSection('investimentos')">
+                                    <div class="icon-wrapper bg-primary-light"><i class="bi bi-graph-up text-primary"></i></div>
+                                    <span>Novo Invest.</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div>
+                                <h4>Últimas Transações</h4>
+                            </div>
+                            <ul class="list-mobile">
+                                <li v-for="transacao in ultimasTransacoes" :key="transacao.id" class="d-flex">
+                                    <i :class="['bi', transacao.tipo === 'receita' ? 'bi-arrow-up-circle-fill text-success' : 'bi-arrow-down-circle-fill text-danger']"></i>
+                                    <div class="transaction-info d-flex flex-column ms-2">
+                                        <span class="transaction-description">{{ transacao.descricao }}</span>
+                                        <span class="transaction-amount" :class="transacao.tipo === 'receita' ? 'text-success' : 'text-danger'">
+                                            {{ transacao.tipo === 'receita' ? '+' : '-' }} {{ formatCurrency(transacao.valor) }}
+                                        </span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div>
+                                <h4>Despesas por Categoria</h4>
+                            </div>
+                            <div class="chart-container">
+                                <canvas ref="categoryPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="row" v-if="despesasFuturas.length > 0">
+                    <div class="col-12">
+                        <div class="card futuras-card">
+                            <div class="card-header">
+                                <h4>Despesas Futuras (Parcelas Pendentes)</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Descrição</th>
+                                                <th>Valor</th>
+                                                <th>Vencimento</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="despesa in despesasFuturas" :key="despesa.id">
+                                                <td>{{ despesa.descricao }}</td>
+                                                <td>R$ {{ despesa.valor }}</td>
+                                                <td>{{ despesa.data }}</td>
+                                                <td>
+                                                    <span v-if="despesa.parcelaNumero" class="badge bg-warning">
+                                                        Parcela {{ despesa.parcelaNumero }}/{{ despesa.parcelas }}
+                                                    </span>
+                                                    <span v-else class="badge bg-info">À vista</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+            </section>
+            <!-- Despesas -->
+            <section class="content-section" id="despesas" v-if="currentSection === 'despesas'">
+                <div class=" d-flex justify-content-between align-items-center">
+                    <cabecalho titulo="Gerenciar Despesas" descricao="Acompanhe todas as suas despesas."></cabecalho>
+                    <button class="btn btn-primary btn-mobile" data-bs-toggle="modal" data-bs-target="#novaDespesaModal">
+                        <i class="bi bi-plus btn-mobile-icon"></i>
+                        <span class="btn-mobile-text">Nova Despesa</span>
+                    </button>
+                </div>
+                <div>
+                    <selecionar-mes-ano :mes="mes" :ano="ano" @update:mes="mes = $event" @update:ano="ano = $event" />
+                </div>
+                <total-card tipo="Despesas" :total="totalDespesasDoMes"></total-card> 
+                <div  v-if="despesas.length > 0" class="scroll-area">
+                    <div v-if="despesasCartaoFiltradas.length > 0" class="">
+                        <div class="d-flex justify-content-between w-100 mb-3">
+                            <span class="ms-2">
+                                Cartão de crédito
+                            </span>
+                            <div class="d-flex justify-content-around">
+                                <!-- <button class="btn btn-danger btn-sm me-2" @click="excluirTodasParcelas(despesasCartaoFiltradas[0]?.descricao)" v-if="despesasCartaoFiltradas.length > 0">
+                                    <i class="bi bi-trash"></i> Todas
+                                </button> -->
+                                <button class="btn btn-primary btn-sm btn-acao" @click="menuAtivoCartao = !menuAtivoCartao">
+                                    <i class="bi bi-chevron-down" :class="{'bi-chevron-up': menuAtivoCartao}"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <ul class="list-mobile" v-if="menuAtivoCartao && despesasCartaoFiltradas.length > 0">
+                            <li class="list-item-card" v-for="despesa in despesasCartaoFiltradas" :key="despesa.id">
+                                <strong>{{ despesa.descricao }}</strong>
+                                <div class="d-flex flex-column">
+                                    <span class="fs-5">R$ {{ despesa.valor }}</span>
+                                    <span class="fw-lighter">Parcela {{ despesa.parcelaNumero }}/{{ despesa.parcelas }}</span>
+                                </div>
+                                <div class="d-flex justify-content-around">
+                                    <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirDespesa(despesa.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm btn-acao" @click="editarDespesa(despesa)" data-bs-toggle="modal" data-bs-target="#novaDespesaModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <p v-else class="text-center">Nenhuma despesa no crédito cadastrada</p>
+                    <div v-if="despesasDebitoFiltradas.length > 0">
+                        <div class="d-flex justify-content-between w-100 mb-3">
+                            <span class="ms-2">
+                                Débito conta
+                            </span>
+                            <div class="d-flex justify-content-around" @click="menuAtivoDebito = !menuAtivoDebito">
+                                <button class="btn btn-primary btn-sm btn-acao">
+                                    <i class="bi bi-chevron-down" :class="{'bi-chevron-up': menuAtivoDebito}"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <ul class="list-mobile" v-if="menuAtivoDebito && despesasDebitoFiltradas.length > 0">
+                           <li class="d-flex justify-content-between mb-3" v-for="despesa in despesasDebitoFiltradas" :key="despesa.id">
+                               <div class="d-flex flex-column">
+                                    <strong>{{ despesa.descricao }}</strong>
+                                <span class="fw-lighter">Dia: {{ despesa.data.split('/')[0] }}</span>
+                                </div>
+                                    <span class="fs-5">R$ {{ despesa.valor }}</span>
+                                <div class="d-flex justify-content-around">
+                                    <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirDespesa(despesa.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm btn-acao" @click="editarDespesa(despesa)" data-bs-toggle="modal" data-bs-target="#novaDespesaModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                           </li>
+                        </ul>
+                    </div>
+                    <p v-else class="text-center">Nenhuma despesa no débito cadastrada</p>
+                </div>
+    
+                <p v-else>Nenhuma despesa encontrada</p>
+            </section>
+            <!-- Receitas -->
+            <section class="content-section" id="receitas" v-if="currentSection === 'receitas'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <cabecalho titulo="Gerenciar Receitas" descricao="Acompanhe todas as suas receitas."></cabecalho>
+                    <button class="btn btn-primary btn-mobile" data-bs-toggle="modal" data-bs-target="#novaReceitaModal">
+                        <i class="bi bi-plus btn-mobile-icon"></i>
+                        <span class="btn-mobile-text">Nova Receita</span>
+                    </button>
+                </div>
+                <div>
+                    <selecionar-mes-ano :mes="mes" :ano="ano" @update:mes="mes = $event" @update:ano="ano = $event" />
+                </div>
+                <total-card tipo="Receitas" :total="totalReceitasDoMes"></total-card>
+                <div v-if="receitas.length > 0" class="scroll-area">
+                    <ul class="list-mobile">
+                        <li class="list-item-card" v-for="receita in receitasFiltradas" :key="receita.id">
+                            <div class="d-flex flex-column">
+                                <strong>{{ receita.descricao }}</strong>
+                                <span class="fw-lighter">Dia: {{ receita.data.split('/')[0] }}</span>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="fs-5">R$ {{ receita.valor }}</span>
+                            </div>
+                            <div class="d-flex justify-content-around">
+                                <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirReceita(receita.id)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm btn-acao" @click="editarReceita(receita)" data-bs-toggle="modal" data-bs-target="#novaReceitaModal">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <p v-else class="text-center">Nenhuma receita encontrada</p>
+            </section>
+            <!-- Investimentos -->
+            <section class="content-section" id="investimentos" v-if="currentSection === 'investimentos'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <cabecalho titulo="Investimentos" descricao="Acompanhe todas as suas investimentos."></cabecalho>
+                    <button class="btn btn-primary btn-mobile" data-bs-toggle="modal" data-bs-target="#novoInvestimentoModal">
+                        <i class="bi bi-plus btn-mobile-icon"></i>
+                        <span class="btn-mobile-text">Novo Investimento</span>
+                    </button>
+                </div>
+
+                <!-- <div class="total mb-3 mt-3">
+                    <p>Total de Investimentos: <strong>R$ {{ totalInvestimentosDoMes }}</strong></p>
+                </div> -->
+                <total-card tipo="Investimentos" :total="totalInvestimentosDoMes"></total-card>
+                <div v-if="investimentos.length > 0" class="scroll-area">
+                    <ul class="list-mobile">
+                        <li class="list-item-card" v-for="investimento in investimentos" :key="investimento.id">
+                            <div class="d-flex flex-column">
+                                <strong>{{ investimento.descricao }}</strong>
+                                <span class="fw-lighter">Data: {{ investimento.data }}</span>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="fs-5">R$ {{ investimento.valor }}</span>
+                            </div>
+                            <div class="d-flex justify-content-around">
+                                <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirInvestimento(investimento.id)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm btn-acao" @click="editarInvestimento(investimento)" data-bs-toggle="modal" data-bs-target="#novoInvestimentoModal">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <p v-else class="text-center">Nenhum investimento encontrado</p>
+            </section>
+            <!-- Dívidas -->
+            <section class="content-section" id="dividas" v-if="currentSection === 'dividas'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <cabecalho titulo="Dívidas" descricao="Acompanhe todas as suas dívidas."></cabecalho>
+                    <button class="btn btn-primary btn-mobile" data-bs-toggle="modal" data-bs-target="#novaDividaModal">
+                        <i class="bi bi-plus btn-mobile-icon"></i>
+                        <span class="btn-mobile-text">Nova Divida</span>
+                    </button>
+                </div>
+                <div>
+                </div>
+                <total-card tipo="Dívidas" :total="totalDividasDoMes"></total-card>
+                <div v-if="dividas.length > 0" class="scroll-area">
+                    <ul class="list-mobile">
+                        <li class="list-item-card" v-for="divida in dividasFiltradas" :key="divida.id">
+                            <div class="d-flex flex-column">
+                                <strong>{{ divida.descricao }}</strong>
+                                <span class="fw-lighter">Data: {{ divida.data }}</span>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="fs-5">R$ {{ divida.valor }}</span>
+                            </div>
+                            <div class="d-flex justify-content-around">
+                                <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirDivida(divida.id)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm btn-acao" @click="editarDivida(divida)" data-bs-toggle="modal" data-bs-target="#novaDividaModal">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <p v-else class="text-center">Nenhuma dívida encontrada</p>
+            </section>
+            <!-- Controles -->
+            <section class="content-section" id="controles" v-if="currentSection === 'controles'">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <cabecalho titulo="Controles" descricao="Acompanhe todos os seus controles."></cabecalho>
+                    <button class="btn btn-primary btn-mobile" data-bs-toggle="modal" data-bs-target="#novoControleModal">
+                        <i class="bi bi-plus btn-mobile-icon"></i>
+                        <span class="btn-mobile-text">Novo Controle</span>
+                    </button>
+                </div>
+                <button class="btn btn-primary btn-add-tipo" @click="adicionandoTipo = !adicionandoTipo">
+                    {{ editandoTipo ? 'Cancelar Edição' : 'Add tipo' }}
+                    <i class="bi bi-caret-down-fill" :class="{'bi-caret-up-fill': adicionandoTipo}"></i>
+                </button>
+                <form v-if="adicionandoTipo" class="d-flex mb-3" @submit.prevent="adicionarTipo">
+                    <input type="text" v-model="nomeTipoControle" :placeholder="editandoTipo ? 'Novo nome do tipo' : 'Nome do tipo'" class="form-control" required>
+                    <input type="text" v-model="valorPadraoTipo" placeholder="Valor padrão" class="form-control ms-2" style="width: 30%;" @input="formatarComoMoeda($event, {valor: valorPadraoTipo})" >
+                    <button class="btn btn-primary ms-2 " type="submit">{{ editandoTipo ? 'Atualizar' : 'Adicionar' }}</button>
+                </form>
+                <div v-if="tiposControlesSalvos.length > 0" class="scroll-area">
+                    <ul class="list-mobile" v-for="tipo in tiposControlesSalvos" :key="tipo.id">
+                        <li class="list-item-card d-flex flex-column">
+                            <div class="d-flex justify-content-between w-100">
+                                <span class="ms-2 d-flex align-items-center">
+                                    <strong class="me-2">{{ tipo.nome }}</strong>
+                                    <span v-if="tipo.valorPadrao && tipo.valorPadrao !== '0,00'" class="badge bg-success ms-2">
+                                        Padrão: R$ {{ tipo.valorPadrao }}
+                                    </span>
+                                </span>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li v-if="temControlesPagos(tipo.nome)">
+                                            <button class="dropdown-item" @click="marcarComoPago(tipo)">
+                                                <i class="bi bi-check-circle me-2"></i>Pagar Período
+                                            </button>
+                                        </li>
+                                        <li v-else>
+                                            <button class="dropdown-item" @click="desmarcarComoPago(tipo)">
+                                                <i class="bi bi-x-circle me-2"></i>Restaurar Controles
+                                            </button>
+                                        </li>
+                                        <li><button class="dropdown-item" @click="mostrarHistoricoPagamentos(tipo)">
+                                            <i class="bi bi-clock-history me-2"></i>Histórico
+                                        </button></li>
+                                        <li><button class="dropdown-item" @click="editarTipo(tipo)" data-bs-toggle="modal" data-bs-target="#novoTipoModal">
+                                            <i class="bi bi-pencil me-2"></i>Editar
+                                        </button></li>
+                                        <li><button class="dropdown-item text-danger" @click="excluirTipo(tipo.id)">
+                                            <i class="bi bi-trash me-2"></i>Excluir
+                                        </button></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <ul class="list-mobile w-100 mt-3">
+                                <li class="list-item-card" v-for="controle in filtrarControlesPorTipo(tipo.nome)" :key="controle.id" :class="{'pago': controle.pago}">
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-lighter">{{ controle.data }}</span>
+                                        <span v-if="controle.pago" class="badge bg-success mt-1" style="font-size: 10px;">PAGO</span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="fs-5">R$ {{ controle.valor }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-around">
+                                        <button class="btn btn-danger btn-sm me-2 btn-acao" @click="excluirControle(controle.id)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm btn-acao" @click="editarControle(controle)" data-bs-toggle="modal" data-bs-target="#novoControleModal">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                                <p v-if="calcularTotalControlesPorTipo(tipo.nome) !== '0,00'" class="text-muted text-end">Total: R$ <strong>{{ calcularTotalControlesPorTipo(tipo.nome) }}</strong></p>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal Nova Despesa -->
+        <div id="novaDespesaModal" class="modal fade" tabindex="-1" aria-labelledby="novaDespesaModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form class="modal-content" @submit.prevent="salvarDespesa">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novaDespesaModalLabel">{{ editandoDespesa ? 'Editar Despesa' : 'Nova Despesa' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <input type="text" id="descricao" class="form-control" v-model="novaDespesa.descricao" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select id="tipo" class="form-select" v-model="novaDespesa.tipo" required>
+                                <option value="" disabled>Selecione o tipo</option>
+                                <option value="mercado">Mercado</option>
+                                <option value="farmacia">Farmácia</option>
+                                <option value="transporte">Transporte</option>
+                                <option value="moradia">Moradia</option>
+                                <option value="educacao">Educação</option>
+                                <option value="saude">Saúde</option>
+                                <option value="lazer">Lazer</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-flex">
+                            <div class="flex-grow-1">
+                                <label for="valor" class="form-label">Valor</label>
+                                <input
+                                    type="text"
+                                    id="valor"
+                                    class="form-control"
+                                    v-model="novaDespesa.valor"
+                                    @input="formatarComoMoeda($event, novaDespesa)"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label for="debitoCredito" class="form-label">Débito/Crédito</label>
+                                <select class="form-select" v-model="novaDespesa.debitoCredito">
+                                    <option value="d">Débito</option>
+                                    <option value="c">Crédito</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div v-if="novaDespesa.debitoCredito === 'c'">
+                            <label for="cartao" class="form-label">Parcelas</label>
+                            <select class="form-select" v-model="novaDespesa.parcelas">
+                                <option value="1">1x</option>
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                                <option value="7">7x</option>
+                                <option value="8">8x</option>
+                                <option value="9">9x</option>
+                                <option value="10">10x</option>
+                                <option value="11">11x</option>
+                                <option value="12">12x</option>
+                                <option value="13">13x</option>
+                                <option value="14">14x</option>
+                                <option value="15">15x</option>
+                                <option value="16">16x</option>
+                                <option value="17">17x</option>
+                                <option value="18">18x</option>
+                                <option value="19">19x</option>
+                                <option value="20">20x</option>
+                                <option value="21">21x</option>
+                                <option value="22">22x</option>
+                                <option value="23">23x</option>
+                                <option value="24">24x</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Dia</label>
+                            <input type="number" id="data" class="form-control" v-model="dia" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetForm">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">{{ editandoDespesa ? 'Salvar Alterações' : 'Salvar' }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Nova Receita -->
+        <div id="novaReceitaModal" class="modal fade" tabindex="-1" aria-labelledby="novaReceitaModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form class="modal-content" @submit.prevent="salvarReceita">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novaReceitaModalLabel">{{ editandoReceita ? 'Editar Receita' : 'Nova Receita' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <input type="text" id="descricao" class="form-control" v-model="novaReceita.descricao" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="valorReceita" class="form-label">Valor</label>
+                            <input 
+                                type="text" 
+                                id="valorReceita" 
+                                class="form-control" 
+                                v-model="novaReceita.valor" 
+                                @input="formatarComoMoeda($event, novaReceita)" 
+                                required 
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Dia</label>
+                            <input type="number" id="data" class="form-control" v-model="dia" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetForm">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Novo Investimento -->
+        <div id="novoInvestimentoModal" class="modal fade" tabindex="-1" aria-labelledby="novoInvestimentoModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form class="modal-content" @submit.prevent="salvarInvestimento">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novoInvestimentoModalLabel">{{ editandoInvestimento ? 'Editar Investimento' : 'Novo Investimento' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <input type="text" id="descricao" class="form-control" v-model="novaInvestimento.descricao" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="valorInvestimento" class="form-label">Valor</label>
+                            <input type="text" id="valorInvestimento" class="form-control" v-model="novaInvestimento.valor" @input="formatarComoMoeda($event, novaInvestimento)" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" id="data" class="form-control" v-model="novaInvestimento.data" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetForm">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">{{ editandoInvestimento ? 'Salvar Alterações' : 'Salvar' }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Nova Divida -->
+        <div id="novaDividaModal" class="modal fade" tabindex="-1" aria-labelledby="novaDividaModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form class="modal-content" @submit.prevent="salvarDivida">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novaDividaModalLabel">{{ editandoDivida ? 'Editar Divida' : 'Nova Divida' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <input type="text" id="descricao" class="form-control" v-model="novaDivida.descricao" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="valor" class="form-label">Valor</label>
+                            <input type="text" id="valor" class="form-control" v-model="novaDivida.valor" @input="formatarComoMoeda($event, novaDivida)" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="prazo" class="form-label">Prazo</label>
+                            <input type="number" id="prazo" class="form-control" v-model="novaDivida.prazo" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="taxa" class="form-label">Taxa (%)</label>
+                            <input type="number" id="taxa" class="form-control" v-model="novaDivida.taxa" step="0.01" min="0" max="100" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" id="data" class="form-control" v-model="novaDivida.data" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="vencimento" class="form-label">Vencimento</label>
+                            <input type="date" id="vencimento" class="form-control" v-model="novaDivida.vencimento" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetForm">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">{{ editandoDivida ? 'Salvar Alterações' : 'Salvar' }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Novo Controle -->
+        <div id="novoControleModal" class="modal fade" tabindex="-1" aria-labelledby="novoControleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form class="modal-content" @submit.prevent="salvarControle">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novoControleModalLabel">{{ editandoControle ? 'Editar Controle' : 'Novo Controle' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select v-if="tiposControlesSalvos.length > 0" name="tipo" id="tipo" v-model="novaControle.tipo" @change="preencherValorPadrao" class="form-select" required>
+                                <option value="" disabled>Selecione o tipo</option>
+                                <option v-for="tipo in tiposControlesSalvos" :key="tipo.id" :value="tipo.nome">{{ tipo.nome }}</option>
+                            </select>
+                            <p v-else class="text-muted">Nenhum tipo criado. Crie um tipo primeiro.</p>
+                        </div>
+                        <div class="mb-3">
+                            <label for="valor" class="form-label">Valor</label>
+                            <input type="text" id="valor" class="form-control" v-model="novaControle.valor" @input="formatarComoMoeda($event, novaControle)" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" id="data" class="form-control" v-model="novaControle.data" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetForm">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">{{ editandoControle ? 'Salvar Alterações' : 'Salvar' }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Editar Tipo -->
+        <div id="novoTipoModal" class="modal fade" tabindex="-1" aria-labelledby="novoTipoModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form class="modal-content" @submit.prevent="salvarTipoEditado">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="novoTipoModalLabel">Editar Tipo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="nomeTipo" class="form-label">Nome do Tipo</label>
+                            <input type="text" id="nomeTipo" class="form-control" v-model="nomeTipoControle" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="valorPadrao" class="form-label">Valor Padrão</label>
+                            <input type="text" id="valorPadrao" class="form-control" v-model="valorPadraoTipo" @input="formatarComoMoeda($event, {valor: valorPadraoTipo})" placeholder="0,00" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cancelarEdicaoTipo">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Vue e Bootstrap -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="main.js"></script>
+    <script src="service-worker.js"></script>
+</body>
+</html>
