@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.gdlnani89.ydin",
+    "sha256_cert_fingerprints":
+    ["A4:1A:57:AD:89:00:A9:35:7E:37:28:55:0F:00:D6:1E:0E:6A:C7:7E:5F:91:DC:FD:5D:E4:A1:79:13:7D:A8:61"]
+  }
+}]
